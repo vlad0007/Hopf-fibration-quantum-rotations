@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Hopf fibration
+	</title>
+	<link rel="stylesheet" type="text/css" href="libs/style.css">
+	<script type="text/javascript" src="libs/three.js"></script>
+	<script type = "text/javascript" src = "libs/dat.gui.js"></script>
+	<script src = "libs/OrbitControls.js"></script>
+	<script src = "libs/WebGeometry.js"></script>
+	<script src = "Hopf/hopf.js"></script>
+	<script src = "Hopf/hopf_rotations.js"></script>
+	<script src = "Hopf/hopf_buttons.js"></script>
+	<script src = "Hopf/hopf_circles.js"></script>
+	
+  
+	<style>
+		#div_out
+		{
+			position: relative;
+			width: 1300px;
+			height: 560px;
+			left: 0px;
+			background-color: #fafffa;
+			border: solid 2px;
+		}
+		
+		#div_sphere
+		{
+			position: absolute;
+			width: 420px;
+			height: 523px;
+			left: 10px;
+			top: 1px;
+			background-color: #eeffee;
+			border: solid 1px;
+		}
+		
+		#div_hopf
+		{
+			position: absolute;
+			left: 430px;
+			top: 1px;	
+			width: 600px;
+			height: 523px;
+			background-color: #eeeeff;
+			border: solid 1px;
+		}
+		
+		#gui_container
+		{
+			position: absolute;
+			left: 1040px;
+			top: 8px;
+		}
+		
+		#div_rotate
+		{
+			position: absolute;
+			left: 4px;
+			top: 525px;
+			width: 1290px;
+			height: 34px;
+			<!-- background-color: #ffffff; -->
+		}
+	</style>
+	
+	  <style>
+	   .leftimg 
+	   {
+		float:left; /* Выравнивание по левому краю */
+		margin: 7px 7px 7px 0; /* Отступы вокруг картинки */
+	   }
+	   .rightimg  
+	   {
+		float: right; /* Выравнивание по правому краю  */ 
+		margin: 7px 0 7px 7px; /* Отступы вокруг картинки */
+	   }
+	  </style>
+			
+	<style>
+		button
+		{
+		  border-radius: 10px;
+		  border: none;
+		  padding: 6px;
+		  color: #111;
+		  font: italic bold 12px Georgia,serif;
+		  transition: all 0.2s;
+		  margin: 2px;
+		  border-bottom: 0px solid #eee;
+		  cursor:pointer;
+						position: absolute;
+						left: 50px;
+						top: 5px;	
+		}
+		button:active
+		{
+		  transform: scaleX(0.9) translateY(4px);
+		}
+
+		button.yellow{
+		  background: #88aa00;
+		}
+		button.yellow:not(:active){
+		  border-bottom: 3px solid #333300;
+		}
+		
+		button.rot
+		{
+		  border-radius: 0px;
+		  border: 2px;
+		  font: bold 16px Ariel;
+		  background: #777777;
+		  padding: 4px 4px;
+		  border-radius: 6px;
+		  cursor:pointer;
+		}
+		
+		button.quant
+		{
+		  border-radius: 0px;
+		  border: 2px;
+		  font: bold 16px Ariel;
+		  background: #777777;
+		  padding: 4px 12px;
+		  border-radius: 6px;
+		  cursor:pointer;
+		}
+
+	</style>
+
+	<style>
+		.aligncenter 
+		{
+			text-align: center;
+		}
+		.red2  {
+			color: red; /* цвет выделения */
+			font-weight: bold;
+			font-size: 14pt;
+		}
+	</style>
+	
+  <style>
+   hr {
+    border: none; /* Убираем границу */
+    background-color: brown; /* Цвет линии */
+    color: brown; /* Цвет линии для IE6-7 */
+    height: 2px; /* Толщина линии */
+   }
+   
+  </style>
+</head>
+
+<body>
+
+<h2 align = "center">Hopf fibration</h2>
+
+<p>
+<div id="div_out">
+	<input type="checkbox" id="btn_check" style = "position: absolute; top: 448px; left: 1220px;">
+	<input type="checkbox" id = 'btn_check_spiral' style = "position: absolute; top: 498px; left: 1220px;">
+
+	<button class='quant' id = 'btn_thick1'  style = "position: absolute; top: 455px; left: 1040px; background: #bbbbbb;" >1</button>
+	<button class='quant' id = 'btn_thick2'  style = "position: absolute; top: 455px; left: 1080px; background: #bbbbbb;" >2</button>
+	<button class='quant' id = 'btn_thick3'  style = "position: absolute; top: 455px; left: 1120px; background: #bbbbbb;" >3</button>
+
+	<button class='yellow' id = 'btn_clear_hopf'  style = "position: absolute; top: 490px; left: 1035px; background: #aaddaa;" >Erase Hopf circles</button>
+	<div id = "div_sphere">
+	<!-- // Положение canvas_draw_hud совпадает с положением canvas_draw. Но у canvas_draw z-index = 1, а у canvas_draw_hud z-index = 0. -->
+		<canvas id = "canvas_draw" width="415" height="522" style = "border: 1px solid; position: absolute; z-index: 1"></canvas>
+		<canvas id = "canvas_draw_hud" width="415" height="522" style = "position: absolute; z-index: 0"></canvas>
+	</div>
+		
+	<div id="div_hopf">
+		<canvas id = "canvas_hopf" width="600" height="522" style = "position: absolute;"></canvas>
+				<button class='quant' id = 'btn_circles'  style = "position: absolute; top: 400px; left: 500px; background: #bbbbbb;" >Circles</button>
+				<button class='quant' id = 'btn_lines'  style = "position: absolute; top: 440px; left: 507px; background: #bbbbbb;" >Lines</button>
+	
+				<button class='quant' id = 'btn_4'  style = "position: absolute; top: 480px; left: 480px; background: #bbbbbb;" >4</button>
+				<button class='quant' id = 'btn_5'  style = "position: absolute; top: 480px; left: 520px; background: #bbbbbb;" >5</button>
+				<button class='quant' id = 'btn_7'  style = "position: absolute; top: 480px; left: 560px; background: #bbbbbb;" >7</button>
+
+				<!-- <label>Click me <input type="text" / style = "position: absolute; top: 480px; left: 100px;"></label> -->
+	</div>		
+		
+	<div id = "gui_container" >
+	</div>
+	
+	<div id="div_rotate">
+		<button class='rot' id = 'btn_rotX_plus' style = "position: absolute; top: 0px; left: 4px; background: #22aaaa;" >Rotate X+</button>
+		<button class='rot' id = 'btn_rotX_min'  style = "position: absolute; top: 0px; left: 90px; background: #77aaaa;" >Rotate X-</button>
+		<button class='rot' id = 'btn_rotY_plus' style = "position: absolute; top: 0px; left: 190px; background: #22aaaa;" >Rotate Y+</button>
+		<button class='rot' id = 'btn_rotY_min'  style = "position: absolute; top: 0px; left: 276px; background: #77aaaa;" >Rotate Y-</button>
+		<button class='rot' id = 'btn_rotZ_plus' style = "position: absolute; top: 0px; left: 376px; background: #22aaaa;" >Rotate Z+</button>
+		<button class='rot' id = 'btn_rotZ_min'  style = "position: absolute; top: 0px; left: 466px; background: #77aaaa;" >Rotate Z-</button>
+		
+		<button class='rot' id = 'btn_rotN_plus'  style = "position: absolute; top: 0px; left: 570px; background: #22aaaa;" >Rotate N+</button>
+		<button class='rot' id = 'btn_rotN_min'  style = "position: absolute; top: 0px; left: 656px; background: #77aaaa;" >Rotate N-</button>
+		
+		<button class='quant' id = 'btn_X'  style = "position: absolute; top: 0px; left: 810px; background: #77aaaa;" >X</button>
+		<button class='quant' id = 'btn_Y'  style = "position: absolute; top: 0px; left: 855px; background: #77aaaa;" >Y</button>
+		<button class='quant' id = 'btn_Z'  style = "position: absolute; top: 0px; left: 900px; background: #77aaaa;" >Z</button>
+		<button class='quant' id = 'btn_H'  style = "position: absolute; top: 0px; left: 945px; background: #77aaaa;" >H</button>
+		
+		<button class='quant' id = 'btn_Deg10'  style = "position: absolute; top: 0px; left: 1008px; background: #bbbbbb;" >10°</button>
+		<button class='quant' id = 'btn_Deg5'  style = "position: absolute; top: 0px; left: 1060px; background: #bbbbbb;" >5°</button>
+		<button class='quant' id = 'btn_Deg2'  style = "position: absolute; top: 0px; left: 1105px; background: #bbbbbb;" >2°</button>
+		
+		<button class='quant' id = 'btn_clear_rotation'  style = "position: absolute; top: 0px; left: 1146px; background: #aaddaa;" >Erase BS points</button>
+		<!-- <label id = text_sg > &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<em>Stern–Gerlach experiment</em></label> -->
+	</div>
+</div>
+</p>
+<br>
+<hr>
+<p>
+<span class=blue3>
+&ensp;To determine the value of the quantum state <b>|ψ〉</b>, set the values of the polar and azimuth angles
+either using the <b>GUI</b> in the upper right corner of the program, or using the keys located 
+under the <b>GUI</b>. The intersection of a red-colored straight line with a horizontal plane 
+sets the value of complex coordinates. This value is (<b>ζ = ...</b>) you can see it 
+at the very bottom of the left part of the program window.
+</span>
+</p>
+
+<span class=purple>
+&emsp;Bloch sphere and Hopf circles <b>rotation</b> - left mouse button drag<br>
+&emsp;Bloch sphere and Hopf circles <b>size</b> - middle mouse button drag, or mousewheel<br>
+&emsp;Bloch sphere and Hopf circles <b>movement on screen</b> - right mouse button drag
+</span>
+
+
+<hr>
+
+<p>
+A short <a href = "https://youtu.be/RH-sTfONevU" target="_blank"> video</a>
+that shows how to control this program.
+</p>
+
+<hr>
+
+<p>
+This site shows an interactive visualization of the <em>Hopf fibration</em> or <em>Hopf bundle</em>. 
+The corresponding program was created on the basis of the <em>Riemann-Bloch sphere</em> 
+and the <em>stereographic projection</em> of points belonging to this sphere onto a <em>Complex plane</em>. 
+When visualizing the Hopf fibration, each point of this sphere is displayed 
+as a circle on the display screen. These circles are called either <em>Hopf circles</em>, 
+or <em>Clifford parallels</em>, or <em>Villarso circles</em>. Both Hopf, Clifford and Villarso 
+have left their mark on the study of this field of geometry. 
+<em>Quantum rotations</em> were used to move points along the Riemann-Bloch sphere, and, 
+consequently, circles on the torus. Quantum rotations are discussed in detail on this 
+<a href ="https://vlad0007.github.io/QuantumSpin/Chapter6/Chapter6.html" target="_blank">site</a> 
+and another 
+<a href ="https://vlad0007.github.io/BlochSphereOnline/QS_Part2/QS_Part2.html" target="_blank">site</a>.
+</p>
+
+<p>
+The work area of the program is divided into four parts.
+On the left side of the workspace is the Bloch-Riemann sphere. The red arrow on this sphere shows the <em>Bloch vector</em>. 
+Each Bloch vector on the sphere corresponds to a quantum state vector <b></b>. 
+By specifying the Bloch vector (coordinates <b>θ</b> and <b>φ</b> on the sphere), we obtain (after appropriate calculations) 
+the quantum state vector <b>|ψ〉</b>, the value of which is displayed under the Bloch sphere.
+<p>
+
+<p>
+There is a control panel on the right side of the workspace. The coordinates θ and φ of the Bloch vector 
+on the Bloch sphere can be set in the control panel using the <b>polar_electron</b> and <b>azimuth_electron</b> 
+parameters, respectively. The most frequently used values of these parameters can also be set using the buttons, 
+which are also located on the right side of the program workspace.
+</p>
+
+<p>
+The program provides for the possibility of rotating the Bloch vector around a predetermined axis of rotation. 
+The position of the rotation axis can be set using the <b>polar_axis</b> and <b>azimuth_axis</b> parameters 
+in the control panel located on the right side of the program workspace. 
+When you select any of the values of these parameters, the axis of rotation on the Bloch sphere 
+appears automatically. The most frequently used values of the parameters used to set the position 
+of the rotation axis can also be set using the buttons, which are also located on the right side 
+</p>
+
+<p>
+The middle part of the working area of the program is devoted to the output of images 
+corresponding to Hopf bundles. The type of Hopf fibration is given by the position 
+of the Bloch vector on the Riemann-Bloch sphere. In the right part of the work area 
+of the program there is a button "<em>Erase Hopf circles</em>" which is designed to erase the 
+circles that make up the Hopf fibration. Also on the right side of the program's workspace 
+are three buttons "1", "2" and "3" ("<em>Thick lines</em>"), which set the thickness 
+of the circles (each Hopf fibration is a circle called a Hopf circle). 
+The "<em>Axes</em>" switch enables/disables the display of coordinate axes in the middle part 
+of the working area of the program (in which Hopf circles are visualized).
+</p>
+
+<p>
+At the very bottom of the program's workspace there is a row of buttons designed 
+to rotate the Bloch vector on the Riemann-Bloch sphere:
+<br>
+&ensp;<img src="Hopf/All_buttons.png">
+</p>
+
+<h3 align = "center">The Riemann-Bloch sphere is the basis for visualizing the Hopf fibration</h3>
+
+<p>
+In order to understand how the Hopf fibration appears, it is first necessary to deal with the Riemann-Bloch sphere 
+and the stereographic projection of points lying on this sphere onto a complex plane. 
+When visualizing the Hopf fibration, each point on this sphere is displayed as a circle, which is called a "Hopf circle". 
+Each Hopf circle is also called a "layer".
+Just in case, we note that the Riemann-Bloch sphere is a purely mathematical construction 
+and should not be considered as a geometric object in the usual visual sense.
+</p>
+<p>
+On the left side of the workspace, the program displays the Riemann-Bloch sphere. In general, the 
+Hopf fibration is constructed based on a four-dimensional topology in which the Riemann-Bloch sphere 
+is usually called the Riemann sphere. But since we will visualize the Hopf fibration in relation 
+to the quantum mechanics of electron spin, the Riemann-Bloch sphere is usually called simply 
+the Bloch sphere here, since Bernhard Riemann is mainly a mathematician, and Felix Bloch is a physicist. 
+However, both in pure mathematics and in physics, the same methods are used to describe the Hopf fibration. 
+Note also that when describing the state of polarization of light, the Riemann-Bloch sphere 
+is usually called the <em>Poincare sphere</em>.
+<p>
+
+</p>
+In quantum mechanics, the Bloch sphere is a geometric representation of a quantum state in a two-level system, 
+which is called a qubit. The qubit is the simplest quantum mechanical system and generalizes the classical bit. 
+Since a qubit is a two–level system, it can have two possible values of 0 and 1: 
+<br>
+The main feature of a qubit compared to a classical bit is the ability to have superposition states of values 0 and 1. 
+That is, a qubit can be in an arbitrary superposition of two basic states |0〉 and |1〉. 
+The mathematical description of the qubit is presented in terms of the sum of two basis vectors weighted 
+by (complex) amplitudes. This corresponds to a two-dimensional vector with complex coefficients a and b, 
+which is an element of the vector space <b>C</b><sup>2</sup>. Such a superposition can be interpreted as an interference 
+of two possibilities. The quantum state of a qubit is described as
+<br>
+&ensp;&ensp;&ensp;|ψ〉 = a⋅|0〉 + b⋅|1〉
+<br>
+Thus, the state vector |ψ〉 is determined by the sum of two vectors a⋅|0〉 and b⋅|1〉. In this formula, 
+|0〉 and |1〉 are the basis vectors, and the coefficients a and b in front of the basis vectors 
+are generally complex numbers. These two numbers are called probability amplitudes.
+The state vector |ψ〉 is determined by the sum of the two vectors 
+<br>
+&ensp;&ensp;&ensp;|ψ〉 = a⋅|0〉 + b⋅|1〉
+<br>
+In this formula, |0〉 and |1〉 are the basis vectors. The coefficients a and b in front 
+of the basis vectors are generally complex numbers. These two numbers are called probability amplitudes.
+</p>
+
+<p>
+As you know, any complex number can be written in exponential form. The numbers a and b in exponential form look like this:
+<br>
+&emsp; a = r<sub>a</sub>⋅e<sup>iφ<sub>a</sub></sup>  <br>
+&emsp; b = r<sub>b</sub>⋅e<sup>iφ<sub>b</sub></sup>  <br>
+
+The state vector |ψ〉 in this case will take the following form:
+<br>
+&emsp; |ψ〉 = r<sub>a</sub>⋅e<sup>iφ<sub>a</sub></sup>|0〉 + r<sub>b</sub>⋅e<sup>iφ<sub>b</sub></sup>|1〉 <br>
+
+Let's introduce the following notation
+<br>
+&emsp; φ = φ<sub>b</sub>-φ<sub>a</sub> &emsp;
+<br>	
+and therefore,
+<br>
+&emsp; φ<sub>b</sub> = φ + φ<sub>a</sub>
+<br>
+Then the previous expression for the state vector |ψ〉 can be rewritten in this form
+<br>
+&emsp; |ψ〉 = r<sub>a</sub>⋅e<sup>iφ<sub>a</sub></sup>|0〉 + r<sub>b</sub>⋅e<sup>iφ<sub>b</sub></sup>|1〉 = 
+
+r<sub>a</sub>⋅e<sup>iφ<sub>a</sub></sup>|0〉 + r<sub>b</sub>⋅e<sup>iφ</sup>⋅e<sup>iφ<sub>a</sub></sup>|1〉 =
+
+e<sup>iφ<sub>a</sub></sup>(r<sub>a</sub>|0〉 + r<sub>b</sub>⋅e<sup>iφ</sup>|1〉)
+<br>
+<br>
+
+
+For the state vector, only the ratio in which the probability amplitudes are located between each other matters. 
+Therefore, it is possible to painlessly multiply both composing vectors |ψ〉 by the same number 
+equal to e<sup>-iφ<sub>a</sub></sup>. 
+After this multiplication, we get the following expression for |ψ〉
+<br>
+&emsp; |ψ〉 = r<sub>a</sub>⋅|0〉 + r<sub>b</sub>⋅e<sup>iφ</sup>⋅|1〉
+<br>
+Note that the state vector |ψ〉 can be adjusted to any number - real, complex 
+or purely imaginary - the physical meaning will not change from this.
+The angle φ<sub>a</sub> is called the "<b>global phase</b>". Since the global phase appears 
+only as a result of mathematical transformations, it has no physical meaning and therefore 
+can be ignored (but only in quantum mechanical calculations). And when visualizing the Hopf fibration, 
+the global phase plays a fundamental role.
+<br>Unlike the global phase, the angle φ has a direct physical meaning, 
+which determines the phase difference between the components of the state vector. 
+The angle φ is called the "<b>local phase</b>". The local phase plays an important role 
+in the interference of electrons.
+<br>
+The probability amplitudes a and b are usually normalized to 1. Therefore, the sum of 
+r<sub>a</sub><sup>2</sup> + r<sub>b</sub><sup>2</sup> should also be equal to 1:<br>
+&emsp;r<sub>a</sub><sup>2</sup> + r<sub>b</sub><sup>2</sup> = 1
+<br>
+Based on this, it is convenient to enter the following normalization (because always 
+cos<sup>2</sup>+sin<sup>2</sup>=1)<br>
+&emsp; r<sub>a</sub> = cos(θ/2) <br>    
+&emsp; r<sub>b</sub> = sin(θ/2)
+<br>
+Then the expression for the state vector |ψ〉 will take the form
+<br>
+&emsp; r<sub>a</sub> = cos(θ/2) <br>    
+&emsp; r<sub>b</sub> = sin(θ/2)<br>
+</p>
+
+<h3 align = "center">Sphere <b>S</b><sup>3</sup> in <b>C</b><sup>2</sup></h3>
+
+<p>
+A sphere <b>S</b><sup>3</sup> of a unit radius in four-dimensional space <b>R</b><sup>4</sup>
+is a set of points located at a unit distance from the origin. If in this space we consider the real coordinates 
+x<sub>1</sub>, y<sub>1</sub> and x<sub>2</sub>, y<sub>2</sub>, then this sphere
+will be given by the equation &ensp;
+
+x<sub>1</sub><sup>2</sup> + y<sub>1</sub><sup>2</sup> 
++ x<sub>2</sub><sup>2</sup> + y<sub>2</sub><sup>2</sup> = 1
+</p>
+
+<p>
+We can assume that in the expression &ensp; |ψ〉 = a⋅|0〉 + b⋅|1〉 &ensp; the values of the complex quantities
+a and b are defined as follows:
+<br>
+&emsp;&emsp; a = x<sub>1</sub> + i⋅y<sub>1</sub>, &ensp; b = x<sub>2</sub> + i⋅y<sub>2</sub>.
+<br>
+Then the sphere <b>S</b><sup>3</sup> will be represented as a set of complex pairs (a, b).
+Note that |a|<sup>2</sup> + |b|<sup>2</sup> = 1. 
+Thus, we will get an image of our sphere <b>S</b><sup>3</sup> in a two-dimensional
+complex space <b>C</b><sup>2</sup>. 
+</p>
+
+
+<p>
+The entire three-dimensional sphere <b>S</b><sup>3</sup> is filled with circles, 
+and each such circle is associated with a point on a two-dimensional sphere <b>S</b><sup>2</sup>
+- the Riemann-Bloch sphere.
+No two circles intersect. This partition of a three-dimensional
+sphere <b>S</b><sup>3</sup> on a circle is called a Hopf fibration.
+</p>
+
+<p>
+Let's turn to the qubit again.
+Suppose we rotate our qubit |ψ〉 by some angle γ (global phase).     
+Just looking at this qubit by itself, this phase is physically unobservable,
+since the probabilities do not change, i.e. |ψ〉 ∼λ⋅|ψ〉 = e<sup>iγ</sup>⋅|ψ〉 &ensp;
+(it is obvious that the module |λ| = |e<sup>iγ</sup>| = 1).
+However, to visualize the Hopf circles, we will be interested in exactly the entire value
+e<sup>iγ</sup>⋅|ψ〉, in which the angle γ will vary from 0° to 360° 
+thereby defining a circle (this circle is often called a Hopf circle). 
+</p>
+
+<p>
+Despite the fact that the global phase has no physical meaning (as they say in all textbooks
+on quantum mechanics), in mathematics, using it you can get very beautiful results.
+But it turns out not only in mathematics, but also in some sections of modern physics.
+</p>
+
+<p>
+Despite the fact that the global phase has no physical meaning (as they say in all textbooks on quantum mechanics), 
+in mathematics, using it you can get very beautiful results. 
+But it turns out not only in mathematics, but also in some sections of modern physics.
+Why the Hopf fibration based on the global phase (which has no physical meaning in quantum mechanics) 
+is used in physics, I do not know. But by the end of the 1970s, it became clear to some well-known scientists 
+that the Hopf bundle plays a fundamentally important role in gauge approaches to quantum field theory. 
+In addition, in fact, as the core of the entire model, the Hopf bundle appeared in Roger Penrose's theory 
+of twistors, and later in a number of other approaches to the theory of quantum gravity.
+<br>
+<img src="Hopf/Roger_Penrose.png">
+</p>
+
+<p>
+Thus, the three-dimensional sphere <b>S</b><sup>3</sup> is embedded in a four-dimensional 
+Euclidean space <b>R</b><sup>4</sup> identified with a two-dimensional complex space 
+<b>C</b><sup>2</sup>(a, b), where a and b are complex numbers. 
+Next, let's consider the map of a <big>p</big> three-dimensional sphere 
+<b>S</b><sup>3</sup>on a two-dimensional sphere <b>S</b><sup>2</sup> - the Bloch sphere.
+<br>
+&emsp;&emsp;&emsp;<big>p</big>: &ensp;<b>S</b><sup>3</sup>&ensp;⟶&ensp;<b>S</b><sup>2</sup>.
+<br>
+For this mapping, we take a point from a three-dimensional sphere <b>S</b><sup>3</sup> with coordinates (a, b) 
+and using the <big>p</big> mapping, we will map this pair of complex numbers into one complex number λ = a/b:
+<br>
+&emsp;&emsp;&emsp;<big>p</big>: &ensp;(a, b) &ensp;⟶&ensp;λ = a / b
+<br>
+We will consider the point λ = a/b to be a point on the complex line <b>С</b><sup>1</sup>.
+But the complex line <b>С</b><sup>1</sup> is simultaneously a two-dimensional plane <b>R</b><sup>2</sup>.
+
+Since in general the complex number b can turn to 0, then it is necessary to add to <b>С</b><sup>1</sup>
+an infinitely distant point. That is, to replenish the two-dimensional plane <b>R</b><sup>2</sup> with one infinitely distant point.
+As a result of these actions, a two-dimensional sphere <b>S</b><sup>2</sup> is obtained.
+On this sphere, all points λ = a/b are finite, but one point is located at infinity. Let this infinitely distant point
+be located at the south pole of a two-dimensional sphere <b>S</b><sup>2</sup>. As a result of all these manipulations, 
+a three-dimensional sphere <b>S</b><sup>3</sup> was mapped onto a two-dimensional sphere <b>S</b><sup>2</sup>.
+<br>
+
+<p>
+Here is a drawing showing the stereographic projection of a unit sphere
+from the south pole S to the plane z = 0. The stereographic projection maps
+the northern hemisphere to the area lying inside the unit circle.  
+The southern hemisphere is mapped to an area outside the unit circle.  
+The equator coincides with the unit circle.
+<br>
+&emsp;<img src="Hopf/stereographics.png">
+<br>
+Let <b>O(0, 0, 0)</b> be the center of the sphere, <b>N(0, 0, 1)</b> be the north pole, and <b>S(0, 0, -1)</b> the south pole.      
+Let <b>P'(x', y', 0)</b> be the intersection of a straight line <b>SP</b> with the equatorial plane <b>z = 0</b>,
+and<b>Q(0, 0, z)</b> – projection <b>P(x, y, z)</b> on the <b>z axis</b>.   The point <b>P'</b> 
+is called the stereographic projection of the point <b>P</b>.  
+From similar triangles <b>SOP'</b> and <b>SQP</b> we find:
+<br>
+&emsp;<img src = "Hopf/ster_formula_1.png">
+<br>
+Now let's introduce a complex variable in the plane <b>z = 0</b><b>ζ</b> 
+<br>
+&emsp;<img src = "Hopf/ster_formula_2.png">
+<br>
+In the visualization program, the complex variable ζ is denoted in the standard way accepted for
+complex numbers ζ = <b>z = x + iy</b>. In this expression, <b>x</b> and <b>y</b> are coefficients before
+the real and imaginary parts of the variable <b>z</b>, and no longer spatial coordinates (<em>x, y, z</em>).
+
+In the visualization program, the complex plane is located on the spatial plane <b>z = 0</b>.
+The complex number ζ = <b>z = x + iy</b> is located purely geometrically as a point <b>P'</b> intersection
+a projecting line <b>PS</b> with a plane <b>z = 0</b>.
+</p>
+
+<p>
+The representation of the state vector on the Bloch sphere is made in such a way that it is possible to display
+the true size of the angles θ, rather than their half size θ/2.
+But it should be remembered that in fact <b>the basis vectors |0〉 and |1〉 are orthogonal vectors</b>
+despite the fact that they are shown lying on the same straight line. This is nothing more than just a convention adopted
+specifically for the representation of state vectors on the Bloch sphere.
+</p>
+
+<h3 align = "center">Displaying Hopf circles on the screen</h3>
+
+<p>
+Let's emphasize that <b><span class=brown>each point</span></b> on the sphere the Riemann-Bloch
+is displayed as a <b><span class=brown>separate Hopf circle</span></b>.
+However, we recall once again that the Riemann-Bloch sphere is a purely mathematical construction and therefore it is impossible to
+draw a circle at any point of this sphere. Everything looks a little more complicated.
+<br>
+To visualize a Hopf circle, first of all you need to find the position of the center of this circle and its radius.
+To do this, draw a straight line, as shown in the following figure, and find the intersection point of this straight line with the OXY plane
+, which is designated in the program as "<span class=brown>Complex plane</span>". We also need to set
+some scale in which we will display the circles. It is easy to understand that there will be
+only one circle above the <b>North pole</b> - the Bloch vector directed from point O to point <b>N</b> (North pole) at any
+value of the parameter value <b>azimuth_electron</b> (geographic longitude) will always be directed vertically upwards.
+Therefore, we can take the size ON = OA as the unit radius of the Hopf circle. All other radii of the circles
+will be measured relative to this radius (the main thing is to maintain the proportionality of the radii of all Hopf circles).
+<br>
+&emsp;<img src = "Hopf/BS_Hopf.png">
+</p>
+
+<p>
+Thus, only one circle will be located above the north pole of the Riemann-Bloch sphere.
+If we replace the geograph (parameter <b>polar_electron</b>), then in fact new Riemann-Bloch
+circles will appear lying on the corresponding parallel of this sphere. In the following figure, each
+point on the Riemann-Bloch sphere corresponds to one circle. To designate the parameter <b>polar_electron</b>
+equal to 120°, this entire parallel will be filled with Hopf circles - "layers". 
+The totality of all the circles on this parallel forms a torus. To get this drawing - after the launch
+programs set <b>polar_electron</b>) = 120° when connected to the inside of the program. 
+I think that press lightly, turning Z+ over and over again, and you will see a circle in front of you.
+<br>
+If you want to get the value <b>polar_electron</b>) = 180° - all the Hopf circles turn into one vertical straight line.
+<br>
+&emsp;<img src = "Hopf/S_0_120_180.png">
+</p>
+
+<p>
+And here's what images formed by Hopf circles look like at parameter values 
+<b>polar_electron</b>) respectively equal to 30°, 60° and 90°:
+<br>
+&emsp;<img src = "Hopf/S_30_60_90.png">
+<br>
+It can be seen from the screenshot that with an increase in the <b>polar_electron</b> parameter, the tori "swell". And with
+the value of the parameter <b>polar_electron</b> = 180°, instead of a torus, we will see a vertical straight line.
+</p>
+
+<p>
+There are many tori formed at once when rotating around the Z axis:
+<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<img src = "Hopf/multiple circles_Z.png">
+</p>
+
+<p>
+The thickness of the tube of such a torus varies depending on the location of the latitude between the horizontal
+plane and the point from which the projection takes place (the south pole of the sphere). 
+As the latitude shifts from the projection point, the torus passes through all intermediate states
+between the two limits. In one limit, becoming thinner and thinner, it degenerates
+into a circle (<b>polar_electron</b> = 0°).
+<br> 
+In the opposite case, the torus thickens to a state where its "hole" degenerates into a straight line 
+(on the Bloch sphere, in this case, the parameter <b>polar_electron</b> = 180°).
+In other words, Hopf circles fill the entire space with nested tori.
+But the most important thing here is this. Each point of the Bloch sphere located on the line of latitude
+on the surface of the torus corresponds to a circle line capturing the "doughnut hole"
+and obliquely encircling the pipe. Just as a multitude of points fills the entire circumference of latitude, 
+similarly, a set of such rings, hooked to each other, completely covers the surface
+of the corresponding torus.
+</p>
+
+<p>
+If you rotate the Bloch vector around the axis Z in a spiral mode (you need to install check-box),
+then you can see the following picture:
+<br>
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<img src = "Hopf/spiral.png">
+</p>
+
+<p>
+The Hopf circles that make up the torus are also called Villarso circles
+after the French mathematician and astronomer Yvon Villarso, who noticed
+that on the torus, in addition to the two standard families of circles, there are two other families
+of circles. This is a pair of circles obtained by cutting the torus of rotation with a diagonal
+tangent plane passing through the center of the torus:
+<br>
+&ensp;&ensp;&ensp;<img src="Hopf/Villarso.png">
+</p>
+
+<p>
+All Villarso circles on the torus turn out to be interlocked with each other, 
+and in the topological context of knot theory, this configuration is called the "Hopf bundle" 
+and represents the simplest non-trivial (that is, unconnectable) knot. Here's what two hooked Hopf circles 
+look like in close-up:
+<br>
+&emsp;&emsp;<img src = "Hopf/hooked_circles.png">
+</p>
+
+<p>
+However, the principle of duality is sometimes used in geometry. For example, between points and straight lines. 
+In our case, let's try to match each circle with a separate straight line.
+Let's create a visualization program so that the Villarso circles (Clifford parallels)
+turn into straight lines. This will result in a hyperboloid of rotation:
+<br>
+&ensp;&ensp;&ensp;<img src="Hopf/Hopf_3.png"> <br>
+&ensp;&ensp;&ensp;&ensp;<img src="Hopf/Hopf_4.png">
+</p>
+
+<p>
+You can try to take some other geometric objects instead of circles and straight lines and match them
+with points on the Riemann-Bloch sphere. The resulting visualizations will not make any deep sense at all.
+But the resulting images themselves may be of interest - you will get bundles of geometric objects
+that are quite difficult to obtain in another way. Any two of the circles on the torus are interconnected and
+to create a program depicting this coupling, it is difficult to come up with another option than the one proposed
+for constructing the Hopf bundle.
+</p>
+<p>
+The following screenshot shows, so to speak, the "bundles" obtained
+when, instead of Hopf circles, a square, a pentagon and a heptagon are taken:<br>   
+&&ensp;&ensp;&ensp;<img src="Hopf/Hopf_figures.png">
+</p>
+
+<p>
+Several buttons have been added to the program interface to select geometric objects:
+<br>
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;<img src="Hopf/lines_4_5_7.png">
+</p>
+
+<p>
+However, we are not only interested in rotation around the Z axis.
+This is what individual Hopf circles look like (from a set of such circles 
+consist of tori) with the value of the parameter <b>azimuth_electron</b>) = 0° and various values 
+<b>polar_electron</b> parameter. This screenshot shows rotation no longer around the Z axis, 
+and around the Y axis:
+<br>
+&emsp;&emsp;<img src = "Hopf/Hopf_circles.png">
+</p>
+<br>
+<p>
+&emsp;&emsp;When rotating around the Y axis, an asymmetric torus was obtained:
+&emsp;&emsp;<img src = "Hopf/rotate_Y.png">
+</p>
+
+<p>
+&emsp;&emsp;When rotating around the X-axis, an asymmetric torus is also obtained:
+<br><br>
+&emsp;&emsp;<img src = "Hopf/rotate_X.png">
+</p>
+	
+<p>
+Rotation can be performed around an arbitrarily directed N axis in space. This
+is how two tori obtained by rotating around two different axes look like. 
+In the screenshot, we see not only the hooked Hopf circles, but also two hooked asymmetric tori:	
+<br>
+&emsp;&emsp;<img src = "Hopf/two_torus.png">
+<br><br>
+
+<p>
+And this is what four tori look like - rotation 
+implemented around four different axes:
+<br>
+&emsp;&emsp;<img src = "Hopf/four_torus.png">	
+</p>
+
+<p>
+In this visualization, the Riemann-Bloch sphere and vector rotations play a main role in the Hopf fibration.
+As mentioned above, each point on the sphere corresponds to a single Hopf circle.
+With each rotation of the Bloch vector, we set a new point on the sphere. 
+Rotations on the Riemann-Bloch sphere are <em>quantum rotations</em>.
+</p>
+
+</body>
+</html>
